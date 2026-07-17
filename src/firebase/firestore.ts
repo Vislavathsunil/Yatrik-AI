@@ -1,10 +1,10 @@
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
-  getDocs, 
-  updateDoc, 
-  collection, 
+import {
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  collection,
   serverTimestamp,
   writeBatch,
   increment
@@ -139,20 +139,19 @@ export async function saveTrip(userId: string, trip: Omit<TripPlan, "createdAt" 
 
     // Save the trip document first
     const tripRef = doc(db, "users", userId, "trips", trip.tripId);
-    console.log("Saving trip document to path:", tripRef.path, "with data:", trip);
     await setDoc(tripRef, {
       ...trip,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
-    console.log("Trip document saved successfully!");
+
 
     // Increment user trip count
-    console.log("Updating user document at path:", userRef.path);
+
     await updateDoc(userRef, {
       tripCount: increment(1)
     });
-    console.log("User document updated successfully!");
+
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
@@ -199,7 +198,7 @@ export async function deleteTrip(userId: string, tripId: string): Promise<void> 
   const path = `users/${userId}/trips/${tripId}`;
   try {
     const batch = writeBatch(db);
-    
+
     // Delete the trip document
     const tripRef = doc(db, "users", userId, "trips", tripId);
     batch.delete(tripRef);
@@ -225,7 +224,7 @@ export async function duplicateTrip(userId: string, originalTrip: TripPlan): Pro
   try {
     const batch = writeBatch(db);
     const tripRef = doc(db, "users", userId, "trips", newTripId);
-    
+
     const duplicatedTrip: TripPlan = {
       ...originalTrip,
       tripId: newTripId,
