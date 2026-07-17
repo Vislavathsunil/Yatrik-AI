@@ -198,9 +198,14 @@ Ensure the itinerary has exactly ${durationDays} days, with practical, structure
                 },
                 required: ["day", "title", "activities", "attractions", "foodRecommendations", "estimatedCostRange"]
               }
+            },
+            travelTips: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+              description: "At least 3 practical travel tips for this specific destination and budget."
             }
           },
-          required: ["tripTitle", "destination", "durationDays", "budget", "travelers", "travelStyle", "itinerary"]
+          required: ["tripTitle", "destination", "durationDays", "budget", "travelers", "travelStyle", "itinerary", "travelTips"]
         }
     });
 

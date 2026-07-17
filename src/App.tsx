@@ -2245,7 +2245,7 @@ export default function App() {
                         </div>
 
                         <div className="space-y-4">
-                          {itinerary.travelTips.map((tip, idx) => (
+                          {(itinerary.travelTips || []).map((tip, idx) => (
                             <div key={idx} className="flex gap-3">
                               <div className="w-1.5 h-1.5 bg-[#0F766E] rounded-full shrink-0 mt-2" />
                               <p className="text-xs text-slate-600 font-medium leading-relaxed">
