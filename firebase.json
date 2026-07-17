@@ -1,0 +1,6 @@
+{
+  "firestore": {
+    "database": "ai-studio-yatrikai-a62f3f8a-dbe2-41f5-a46e-4d6ff7d1a2ce",
+    "rules": "firestore.rules"
+  }
+}

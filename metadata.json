@@ -1,0 +1,6 @@
+{
+  "name": "Yatrik AI",
+  "description": "Expert AI travel planner that generates custom, day-wise itineraries based on your destination, budget, travelers, and travel style.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

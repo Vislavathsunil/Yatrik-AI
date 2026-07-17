@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-sandy-50: #fefcf9;
+  --color-sandy-100: #fbf5ed;
+  --color-sandy-200: #f5e7d6;
+  --color-sandy-300: #ebcca9;
+  --color-sandy-500: #d49a5b;
+  --color-sandy-600: #bc7c3c;
+  --color-sandy-700: #9d5e21;
+  --color-sandy-800: #7d4411;
+  --color-sandy-900: #5c2f09;
+
+  --color-india-orange: #FF6B35;
+  --color-india-emerald: #0F766E;
+  --color-india-blue: #2563EB;
+  --color-india-bg: #F8FAFC;
+  --color-india-dark: #0F172A;
+}
+
+@layer utilities {
+  /* Scrollbar hide utility */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Print Specific Styles */
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+    font-size: 12pt;
+    font-family: var(--font-sans), serif;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-container {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+  }
+
+  .print-page-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 2rem;
+  }
+
+  .print-card {
+    border: 1px solid #e5e7eb !important;
+    box-shadow: none !important;
+    background-color: white !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .print-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+}
+

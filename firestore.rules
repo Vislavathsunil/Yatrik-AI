@@ -1,0 +1,119 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn();
+    }
+
+    // FIXED: Corrected regex structure for hyphens and underscores in Firestore
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Users collection
+    // path: /users/{userId}
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      
+      // For creating a user profile, we require matching uid and validated parameters
+      allow create: if isOwner(userId)
+                    && isValidUser(incoming())
+                    && incoming().uid == userId
+                    && incoming().createdAt == request.time
+                    && incoming().lastLogin == request.time;
+                    
+      // For updates, the user can only update specific user profile fields (lastLogin, name, photoURL, tripCount)
+      allow update: if isOwner(userId)
+                    && isValidUser(incoming())
+                    && incoming().createdAt == existing().createdAt
+                    && incoming().uid == existing().uid
+                    && incoming().email == existing().email
+                    && incoming().provider == existing().provider
+                    && incoming().subscriptionPlan == existing().subscriptionPlan;
+
+      allow delete: if false; // Account profiles cannot be deleted directly from client SDK
+
+      function isValidUser(data) {
+        return data.keys().hasAll(['uid', 'name', 'email', 'provider', 'createdAt', 'lastLogin'])
+               && data.uid is string && data.uid.size() <= 128
+               && data.name is string && data.name.size() <= 100
+               && data.email is string && data.email.size() <= 150
+               && data.provider is string && data.provider.size() <= 50
+               && data.createdAt is timestamp
+               && data.lastLogin is timestamp
+               && (!('subscriptionPlan' in data) || data.subscriptionPlan is string)
+               && (!('tripCount' in data) || data.tripCount is int || data.tripCount is float);
+      }
+
+      // Trips subcollection
+      // path: /users/{userId}/trips/{tripId}
+      match /trips/{tripId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId);
+        allow delete: if isOwner(userId);
+
+        allow create: if isOwner(userId)
+                      && isEmailVerified()
+                      && isValidId(tripId)
+                      && isValidTrip(incoming())
+                      && incoming().tripId == tripId
+                      && incoming().createdAt == request.time
+                      && incoming().updatedAt == request.time;
+
+
+        allow update: if isOwner(userId)
+                      && isEmailVerified()
+                      && isValidTrip(incoming())
+                      && incoming().tripId == existing().tripId
+                      && incoming().createdAt == existing().createdAt
+                      && incoming().updatedAt == request.time
+                      // Terminal State check: if existing is marked 'past' or 'completed', block updates
+                      && (existing().get('tripStatus', 'upcoming') != 'past' || incoming().diff(existing()).affectedKeys().hasOnly(['updatedAt', 'tripStatus']));
+
+        function isValidTrip(data) {
+          return data.keys().hasAll(['tripId', 'destination', 'numberOfDays', 'generatedItinerary', 'createdAt', 'updatedAt'])
+                 && data.tripId is string && data.tripId.size() <= 128
+                 && data.destination is string && data.destination.size() <= 200
+                 && (data.numberOfDays is int || data.numberOfDays is float) && data.numberOfDays > 0 && data.numberOfDays <= 30
+                 && data.generatedItinerary is map
+                 && (!('startingLocation' in data) || (data.startingLocation is string && data.startingLocation.size() <= 200))
+                 && (!('startDate' in data) || (data.startDate is string && data.startDate.size() <= 50))
+                 && (!('endDate' in data) || (data.endDate is string && data.endDate.size() <= 50))
+                 && (!('budget' in data) || (data.budget is string && data.budget.size() <= 50))
+                 && (!('travelers' in data) || (data.travelers is string && data.travelers.size() <= 50))
+                 && (!('travelStyle' in data) || (data.travelStyle is string && data.travelStyle.size() <= 100))
+                 && (!('interests' in data) || data.interests is list)
+                 && (!('hotelRecommendations' in data) || data.hotelRecommendations is list)
+                 && (!('transportRecommendations' in data) || data.transportRecommendations is list)
+                 && (!('estimatedBudget' in data) || data.estimatedBudget is map || data.estimatedBudget is string)
+                 && (!('weatherInformation' in data) || data.weatherInformation is map || data.weatherInformation is string)
+                 && (!('packingChecklist' in data) || data.packingChecklist is list)
+                 && (!('tripStatus' in data) || (data.tripStatus is string && data.tripStatus.size() <= 50));
+        }
+      }
+    }
+  }
+}
