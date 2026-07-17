@@ -662,12 +662,25 @@ export default function App() {
         body: JSON.stringify(formData)
       });
 
+      const responseText = await response.text();
+
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || "An unexpected error occurred while planning your trip.");
+        let errorMessage = "An unexpected error occurred while planning your trip.";
+        try {
+          const errData = JSON.parse(responseText);
+          errorMessage = errData.error || errorMessage;
+        } catch {
+          errorMessage = `Server Error (${response.status}): ${responseText.substring(0, 200)}`;
+        }
+        throw new Error(errorMessage);
       }
 
-      const data: TravelItinerary = await response.json();
+      let data: TravelItinerary;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error(`Invalid response from server: ${responseText.substring(0, 200)}`);
+      }
       data.startDate = formData.startDate;
       data.endDate = formData.endDate;
 
